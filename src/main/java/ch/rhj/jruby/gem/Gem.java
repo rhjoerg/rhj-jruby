@@ -4,9 +4,12 @@ import static org.apache.commons.lang3.Functions.asConsumer;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -15,7 +18,9 @@ import ch.rhj.io.Gzip;
 import ch.rhj.io.IO;
 import ch.rhj.io.Tar;
 
-public class Gem {
+public class Gem implements Comparable<Gem> {
+
+	public final static Comparator<Gem> COMPARATOR = (o1, o2) -> compare(o1, o2);
 
 	private static final Consumer<byte[]> DEFAULT_BYTES_CONSUMER = b -> {
 	};
@@ -89,5 +94,51 @@ public class Gem {
 	public void install(Path targetDirectory) throws IOException {
 
 		specification().files().forEach(asConsumer(name -> IO.write(file(name), targetDirectory.resolve(name), true)));
+	}
+
+	@Override
+	public int hashCode() {
+
+		try {
+
+			return specification().hashCode();
+
+		} catch (IOException e) {
+
+			return ExceptionUtils.wrapAndThrow(e);
+		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+
+		Gem other = Gem.class.cast(obj);
+
+		try {
+
+			return specification().equals(other.specification());
+
+		} catch (IOException e) {
+
+			return ExceptionUtils.wrapAndThrow(e);
+		}
+	}
+
+	private static int compare(Gem o1, Gem o2) {
+
+		try {
+
+			return o1.specification().compareTo(o2.specification());
+
+		} catch (IOException e) {
+
+			return ExceptionUtils.wrapAndThrow(e);
+		}
+	}
+
+	@Override
+	public int compareTo(Gem other) {
+
+		return compare(this, other);
 	}
 }

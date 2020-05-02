@@ -8,11 +8,11 @@
 	<parent>
 	    <groupId>ch.rhj</groupId>
 	    <artifactId>rhj-parent</artifactId>
-	    <version>20200501</version>
+	    <version>20200502</version>
 	</parent>
 	
 	<artifactId>rhj-jruby</artifactId>
-	<!-- <version>20200501</version> -->
+	<!-- <version>20200502</version> -->
 	<packaging>jar</packaging>
 	
 	<name>RHJ JRuby utilities</name>
@@ -24,6 +24,11 @@
 			<groupId>ch.rhj</groupId>
 			<artifactId>rhj-io</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>ch.rhj</groupId>
+			<artifactId>rhj-utils</artifactId>
+		</dependency>
 	
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -33,6 +38,11 @@
 		<dependency>
 			<groupId>com.google.jimfs</groupId>
 			<artifactId>jimfs</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
 		</dependency>
 
 		<dependency>
