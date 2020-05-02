@@ -19,6 +19,21 @@
 	<description>RHJ JRuby utilities</description>
 	
 	<dependencies>
+	
+		<dependency>
+			<groupId>ch.rhj</groupId>
+			<artifactId>rhj-io</artifactId>
+		</dependency>
+	
+		<dependency>
+			<groupId>com.google.jimfs</groupId>
+			<artifactId>jimfs</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jruby</groupId>
+			<artifactId>jruby</artifactId>
+		</dependency>
 
 	</dependencies>
 	
