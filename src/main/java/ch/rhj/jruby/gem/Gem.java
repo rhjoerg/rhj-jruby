@@ -1,112 +1,97 @@
 package ch.rhj.jruby.gem;
 
-import static org.apache.commons.lang3.Functions.asConsumer;
-
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Consumer;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import ch.rhj.io.Gzip;
 import ch.rhj.io.IO;
 import ch.rhj.io.Tar;
+import ch.rhj.util.Yaml;
 
 public class Gem implements Comparable<Gem> {
 
+	public final static String METADATA_GZ_KEY = "metadata.gz";
+	public final static String DATA_TAR_GZ_KEY = "data.tar.gz";
+
 	public final static Comparator<Gem> COMPARATOR = (o1, o2) -> compare(o1, o2);
 
-	private static final Consumer<byte[]> DEFAULT_BYTES_CONSUMER = b -> {
-	};
-
 	private byte[] gemTarBytes;
-	private byte[] metadataGzBytes;
-	private byte[] dataTarGzBytes;
+
+	private final Map<String, byte[]> gemContents = new TreeMap<>();
+	private final Map<String, byte[]> files = new TreeMap<>();
 
 	private Specification specification;
-	private Map<String, byte[]> files;
 
 	public Gem(byte[] bytes) {
 
 		this.gemTarBytes = bytes.clone();
 	}
 
-	private void extractGem() throws IOException {
+	private void extractGem() {
 
 		if (gemTarBytes == null)
 			return;
 
-		Map<String, Consumer<byte[]>> consumers = Map.of(//
-				"metadata.gz", b -> metadataGzBytes = b, //
-				"data.tar.gz", b -> dataTarGzBytes = b);
-
-		Tar.extract(gemTarBytes, s -> true, (s, b) -> consumers.getOrDefault(s, DEFAULT_BYTES_CONSUMER).accept(b));
+		Tar.extract(gemTarBytes, s -> true, (s, b) -> gemContents.put(s, b));
 
 		gemTarBytes = null;
 	}
 
-	private void extractMetadata() throws IOException {
+	private void extractMetadata() {
 
 		extractGem();
 
-		if (metadataGzBytes == null)
+		byte[] contents = gemContents.get(METADATA_GZ_KEY);
+
+		if (contents == null)
 			return;
 
-		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-
-		specification = objectMapper.readValue(Gzip.extract(metadataGzBytes), Specification.class);
-		metadataGzBytes = null;
+		specification = Yaml.read(Gzip.extract(contents), Specification.class);
+		gemContents.remove(METADATA_GZ_KEY);
 	}
 
-	public Specification specification() throws IOException {
+	private void extractData() {
+
+		extractGem();
+
+		byte[] contents = gemContents.get(DATA_TAR_GZ_KEY);
+
+		if (contents == null)
+			return;
+
+		Tar.extract(Gzip.extract(contents), s -> true, (n, b) -> files.put(n, b));
+		gemContents.remove(DATA_TAR_GZ_KEY);
+	}
+
+	public Specification specification() {
 
 		extractMetadata();
 
 		return specification;
 	}
 
-	private void extractData() throws IOException {
-
-		extractGem();
-
-		if (dataTarGzBytes == null)
-			return;
-
-		files = new TreeMap<>();
-
-		Tar.extract(Gzip.extract(dataTarGzBytes), s -> true, (n, b) -> files.put(n, b));
-		dataTarGzBytes = null;
-	}
-
-	public byte[] file(String name) throws IOException {
+	public byte[] file(String name) {
 
 		extractData();
 
 		return files.get(name);
 	}
 
-	public void install(Path targetDirectory) throws IOException {
+	public Path install(Path directory) {
 
-		specification().files().forEach(asConsumer(name -> IO.write(file(name), targetDirectory.resolve(name), true)));
+		Path subdirectory = directory.resolve(specification().name());
+
+		specification().files().forEach(name -> IO.write(file(name), subdirectory.resolve(name), true));
+
+		return subdirectory;
 	}
 
 	@Override
 	public int hashCode() {
 
-		try {
-
-			return specification().hashCode();
-
-		} catch (IOException e) {
-
-			return ExceptionUtils.wrapAndThrow(e);
-		}
+		return specification().hashCode();
 	}
 
 	@Override
@@ -114,26 +99,12 @@ public class Gem implements Comparable<Gem> {
 
 		Gem other = Gem.class.cast(obj);
 
-		try {
-
-			return specification().equals(other.specification());
-
-		} catch (IOException e) {
-
-			return ExceptionUtils.wrapAndThrow(e);
-		}
+		return specification().equals(other.specification());
 	}
 
 	private static int compare(Gem o1, Gem o2) {
 
-		try {
-
-			return o1.specification().compareTo(o2.specification());
-
-		} catch (IOException e) {
-
-			return ExceptionUtils.wrapAndThrow(e);
-		}
+		return o1.specification().compareTo(o2.specification());
 	}
 
 	@Override
