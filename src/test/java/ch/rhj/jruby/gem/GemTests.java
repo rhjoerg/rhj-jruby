@@ -15,13 +15,17 @@ public class GemTests {
 
 	private final static Path TEST_DIRECTORY = Paths.get("target", "test-data", "GemTests");
 
+	private final Path rubyGemSource = IO.classLoaderPath("rubygems");
+	private final Path rhjMiniGemSource = rubyGemSource.resolve("rhj_mini_gem-0.0.1.gem");
+	private final Path travisGemSource = rubyGemSource.resolve("travis-1.9.1.travis.1208.9.gem");
+
 	@Test
 	public void testMetadata() {
 
 		Gem gem = null;
 		Specification specification;
 
-		gem = new Gem(IO.readResource("ruby.gems/rhj_mini_gem-0.0.1.gem"));
+		gem = new Gem(IO.read(rhjMiniGemSource));
 		specification = gem.specification();
 
 		assertEquals("rhj_mini_gem", specification.name());
@@ -30,7 +34,7 @@ public class GemTests {
 		assertEquals(1L, specification.files().count());
 		specification.files().map(gem::file).forEach(b -> assertNotNull(b));
 
-		gem = new Gem(IO.readResource("ruby.gems/travis-1.9.1.travis.1208.9.gem"));
+		gem = new Gem(IO.read(travisGemSource));
 		specification = gem.specification();
 
 		assertEquals("travis", specification.name());
@@ -43,7 +47,7 @@ public class GemTests {
 	@Test
 	public void testHashAndEqual() {
 
-		byte[] bytes = IO.readResource("ruby.gems/rhj_mini_gem-0.0.1.gem");
+		byte[] bytes = IO.read(rhjMiniGemSource);
 		Gem gem1 = new Gem(bytes);
 		Gem gem2 = new Gem(bytes);
 
@@ -55,7 +59,7 @@ public class GemTests {
 	@Test
 	public void testInstall() throws Exception {
 
-		Gem gem = new Gem(IO.readResource("ruby.gems/rhj_mini_gem-0.0.1.gem"));
+		Gem gem = new Gem(IO.read(rhjMiniGemSource));
 		Path directory = TEST_DIRECTORY.resolve("testInstall");
 		Path file = directory.resolve("rhj_mini_gem/lib/rhj_mini_gem.rb");
 
