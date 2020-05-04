@@ -23,7 +23,7 @@ public class FolderGemProvider implements GemProvider {
 		String fullName = name + "-" + version + ".gem";
 
 		List<Gem> gems = FolderGemProviderConfig //
-				.instance().locations() //
+				.instance().locations().stream() //
 				.map(p -> p.resolve(fullName)) //
 				.filter(IO::exists) //
 				.map(IO::read) //

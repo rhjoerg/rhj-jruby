@@ -5,45 +5,40 @@ import static java.util.stream.Collectors.toList;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import ch.rhj.jruby.AbstractConfig;
+import ch.rhj.io.IO;
+import ch.rhj.jruby.Config;
+import ch.rhj.util.Cfg;
 import ch.rhj.util.Singleton;
 import ch.rhj.util.SysProps;
 
-public class FolderGemProviderConfig extends AbstractConfig {
+public class FolderGemProviderConfig {
 
 	public static final String PREFIX = "folder";
 
-	private static final Singleton<FolderGemProviderConfig> instance = singleton(FolderGemProviderConfig::new);
+	private static final Singleton<FolderGemProviderConfig> instance = singleton( //
+			() -> Config.instance().child(PREFIX, FolderGemProviderConfig::new));
 
-	private final List<Path> locations;
+	private final Cfg cfg;
 
-	private FolderGemProviderConfig() {
+	private FolderGemProviderConfig(Cfg cfg) {
 
-		super(GemProviderConfig.instance().properties(PREFIX));
-
-		Path workingDir = SysProps.workingDir();
-		List<String> names = properties.stringPropertyNames().stream().map(n -> properties.getProperty(n)).collect(toList());
-
-		locations = names.stream() //
-				.map(n -> Paths.get(n)) //
-				.filter(p -> p.isAbsolute()) //
-				.collect(toList());
-
-		names.stream() //
-				.map(n -> Paths.get(n)) //
-				.filter(p -> !p.isAbsolute()) //
-				.map(p -> workingDir.resolve(p)) //
-				.forEach(p -> locations.add(p));
-
-		locations.add(workingDir);
+		this.cfg = cfg;
 	}
 
-	public Stream<Path> locations() {
+	public List<Path> locations() {
 
-		return locations.stream();
+		List<Path> locations = new ArrayList<>();
+		Path workingDir = SysProps.workingDir();
+		List<Path> paths = cfg.values().stream().map(n -> Paths.get(n)).collect(toList());
+
+		paths.stream().filter(p -> p.isAbsolute()).filter(IO::exists).forEach(locations::add);
+		paths.stream().filter(p -> !p.isAbsolute()).map(workingDir::resolve).filter(IO::exists).forEach(locations::add);
+		locations.add(workingDir);
+
+		return locations;
 	}
 
 	public static FolderGemProviderConfig instance() {
