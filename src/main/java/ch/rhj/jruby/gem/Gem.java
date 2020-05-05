@@ -48,7 +48,7 @@ public class Gem implements Comparable<Gem> {
 
 		specification().files().forEach(name -> IO.write(file(name), subdirectory.resolve(name), replace));
 
-		return subdirectory;
+		return subdirectory.resolve("lib");
 	}
 
 	public Path store(Path directory, boolean replace) {

@@ -92,9 +92,19 @@ public class Gems {
 		return installOrStore(g -> g.install(directory, replace));
 	}
 
+	public synchronized Map<String, Path> install(boolean replace) {
+
+		return install(GemsConfig.instance().libDirectory(), replace);
+	}
+
 	public synchronized Map<String, Path> store(Path directory, boolean replace) {
 
 		return installOrStore(g -> g.store(directory, replace));
+	}
+
+	public synchronized Map<String, Path> store(boolean replace) {
+
+		return store(GemsConfig.instance().gemDirectory(), replace);
 	}
 
 	public static Gems instance() {

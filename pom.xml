@@ -50,6 +50,11 @@
 			<artifactId>jruby-core</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.jruby</groupId>
+			<artifactId>jruby-stdlib</artifactId>
+		</dependency>
+
 	</dependencies>
 	
 </project>
