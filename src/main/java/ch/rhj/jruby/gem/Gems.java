@@ -79,7 +79,7 @@ public class Gems {
 		return !results.contains(false);
 	}
 
-	private Map<String, Path> installOrStore(Function<Gem, Path> installOrStore) {
+	private Map<String, String> installOrStore(Function<Gem, String> installOrStore) {
 
 		return gems.entrySet().stream() //
 				.map(e -> entry(e.getKey(), e.getValue().last())) //
@@ -87,22 +87,22 @@ public class Gems {
 				.collect(toMap(e -> e.getKey(), e -> e.getValue()));
 	}
 
-	public synchronized Map<String, Path> install(Path directory, boolean replace) {
+	public synchronized Map<String, String> install(Path directory, boolean replace) {
 
 		return installOrStore(g -> g.install(directory, replace));
 	}
 
-	public synchronized Map<String, Path> install(boolean replace) {
+	public synchronized Map<String, String> install(boolean replace) {
 
 		return install(GemsConfig.instance().libDirectory(), replace);
 	}
 
-	public synchronized Map<String, Path> store(Path directory, boolean replace) {
+	public synchronized Map<String, String> store(Path directory, boolean replace) {
 
 		return installOrStore(g -> g.store(directory, replace));
 	}
 
-	public synchronized Map<String, Path> store(boolean replace) {
+	public synchronized Map<String, String> store(boolean replace) {
 
 		return store(GemsConfig.instance().gemDirectory(), replace);
 	}

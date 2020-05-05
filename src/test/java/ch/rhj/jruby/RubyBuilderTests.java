@@ -11,7 +11,7 @@ import ch.rhj.util.Cfg;
 
 public class RubyBuilderTests {
 
-	// @Test
+	// @Test // slow. dependes on system property TRAVIS_TOKEN
 	public void test() {
 
 		Cfg system = Cfg.system();

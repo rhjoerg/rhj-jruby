@@ -53,7 +53,6 @@ public class RubyBuilder {
 		ArrayList<String> loadPaths = new ArrayList<>(config.getLoadPaths());
 
 		gems.install(true).values().stream() //
-				.map(p -> p.toUri().toASCIIString()) //
 				.forEach(s -> loadPaths.add(s));
 
 		config.setLoadPaths(loadPaths);

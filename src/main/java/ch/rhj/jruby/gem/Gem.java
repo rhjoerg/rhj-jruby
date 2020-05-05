@@ -42,22 +42,30 @@ public class Gem implements Comparable<Gem> {
 		return files.get(name);
 	}
 
-	public Path install(Path directory, boolean replace) {
+	private String fixUri(String uri) {
+
+		if (uri.startsWith("jimfs:"))
+			uri = "uri:" + uri;
+
+		return uri;
+	}
+
+	public String install(Path directory, boolean replace) {
 
 		Path subdirectory = directory.resolve(specification().name());
 
 		specification().files().forEach(name -> IO.write(file(name), subdirectory.resolve(name), replace));
 
-		return subdirectory.resolve("lib");
+		return fixUri(subdirectory.resolve("lib").toUri().toString());
 	}
 
-	public Path store(Path directory, boolean replace) {
+	public String store(Path directory, boolean replace) {
 
 		Path target = directory.resolve(specification.fullName());
 
 		IO.write(bytes, target, replace);
 
-		return target;
+		return fixUri(target.toUri().toString());
 	}
 
 	@Override

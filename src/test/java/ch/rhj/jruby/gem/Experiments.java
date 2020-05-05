@@ -87,4 +87,9 @@ public class Experiments {
 		assertTrue(o1.isTrue());
 		assertTrue(o2.isNil());
 	}
+
+	@Test
+	public void testFindGemsInMetaInf() {
+
+	}
 }
