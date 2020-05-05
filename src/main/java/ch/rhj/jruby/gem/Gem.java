@@ -17,75 +17,47 @@ public class Gem implements Comparable<Gem> {
 
 	public final static Comparator<Gem> COMPARATOR = (o1, o2) -> compare(o1, o2);
 
-	private byte[] gemTarBytes;
-
-	private final Map<String, byte[]> gemContents = new TreeMap<>();
+	private final byte[] bytes;
 	private final Map<String, byte[]> files = new TreeMap<>();
 
 	private Specification specification;
 
 	public Gem(byte[] bytes) {
 
-		this.gemTarBytes = bytes.clone();
-	}
+		Map<String, byte[]> contents = new TreeMap<>();
 
-	private void extractGem() {
-
-		if (gemTarBytes == null)
-			return;
-
-		Tar.extract(gemTarBytes, s -> true, (s, b) -> gemContents.put(s, b));
-
-		gemTarBytes = null;
-	}
-
-	private void extractMetadata() {
-
-		extractGem();
-
-		byte[] contents = gemContents.get(METADATA_GZ_KEY);
-
-		if (contents == null)
-			return;
-
-		specification = Yaml.read(Gzip.extract(contents), Specification.class);
-		gemContents.remove(METADATA_GZ_KEY);
-	}
-
-	private void extractData() {
-
-		extractGem();
-
-		byte[] contents = gemContents.get(DATA_TAR_GZ_KEY);
-
-		if (contents == null)
-			return;
-
-		Tar.extract(Gzip.extract(contents), s -> true, (n, b) -> files.put(n, b));
-		gemContents.remove(DATA_TAR_GZ_KEY);
+		this.bytes = bytes.clone();
+		Tar.extract(bytes, s -> true, (s, b) -> contents.put(s, b));
+		specification = Yaml.read(Gzip.extract(contents.get(METADATA_GZ_KEY)), Specification.class);
+		Tar.extract(Gzip.extract(contents.get(DATA_TAR_GZ_KEY)), s -> true, (n, b) -> files.put(n, b));
 	}
 
 	public Specification specification() {
-
-		extractMetadata();
 
 		return specification;
 	}
 
 	public byte[] file(String name) {
 
-		extractData();
-
 		return files.get(name);
 	}
 
-	public Path install(Path directory) {
+	public Path install(Path directory, boolean replace) {
 
 		Path subdirectory = directory.resolve(specification().name());
 
-		specification().files().forEach(name -> IO.write(file(name), subdirectory.resolve(name), true));
+		specification().files().forEach(name -> IO.write(file(name), subdirectory.resolve(name), replace));
 
 		return subdirectory;
+	}
+
+	public Path store(Path directory, boolean replace) {
+
+		Path target = directory.resolve(specification.fullName());
+
+		IO.write(bytes, target, replace);
+
+		return target;
 	}
 
 	@Override

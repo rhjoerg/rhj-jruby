@@ -1,11 +1,11 @@
 package ch.rhj.jruby.gem.provider;
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.List;
+import java.nio.file.Path;
+import java.util.Optional;
 
 import ch.rhj.io.IO;
 import ch.rhj.jruby.gem.Gem;
+import ch.rhj.util.Versions;
 
 public class FolderGemProvider implements GemProvider {
 
@@ -17,19 +17,36 @@ public class FolderGemProvider implements GemProvider {
 		return ORDER;
 	}
 
+	private boolean filter(Path path, String name, String version) {
+
+		String fileName = path.getFileName().toString();
+
+		if (!fileName.startsWith(name + "-"))
+			return false;
+
+		if (!fileName.endsWith(".gem"))
+			return false;
+
+		String fileVersion = fileName.substring(0, fileName.length() - 4).substring(name.length() + 1);
+
+		if (Versions.compare(fileVersion, version) < 0)
+			return false;
+
+		return true;
+	}
+
 	@Override
 	public Gem gem(String name, String version) {
 
-		String fullName = name + "-" + version + ".gem";
-
-		List<Gem> gems = FolderGemProviderConfig //
+		Optional<Path> latest = FolderGemProviderConfig //
 				.instance().locations().stream() //
-				.map(p -> p.resolve(fullName)) //
-				.filter(IO::exists) //
-				.map(IO::read) //
-				.map(Gem::new) //
-				.collect(toList());
+				.flatMap(IO::list) //
+				.filter(p -> filter(p, name, version)) //
+				.findFirst();
 
-		return gems.isEmpty() ? null : gems.get(0);
+		if (latest.isEmpty())
+			return null;
+
+		return new Gem(IO.read(latest.get()));
 	}
 }

@@ -1,2 +1,3 @@
 ch.rhj.jruby.gem.provider.FolderGemProvider
 ch.rhj.jruby.gem.provider.ClassPathGemProvider
+ch.rhj.jruby.gem.provider.WebGemProvider

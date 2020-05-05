@@ -17,7 +17,6 @@ public class GemTests {
 
 	private final Path rubyGemSource = IO.classLoaderPath("rubygems");
 	private final Path rhjMiniGemSource = rubyGemSource.resolve("rhj_mini_gem-0.0.1.gem");
-	private final Path travisGemSource = rubyGemSource.resolve("travis-1.9.1.travis.1208.9.gem");
 
 	@Test
 	public void testMetadata() {
@@ -32,15 +31,6 @@ public class GemTests {
 		assertEquals("0.0.1", specification.version().version());
 		assertEquals(1588377600000L, specification.date().toEpochMilli());
 		assertEquals(1L, specification.files().count());
-		specification.files().map(gem::file).forEach(b -> assertNotNull(b));
-
-		gem = new Gem(IO.read(travisGemSource));
-		specification = gem.specification();
-
-		assertEquals("travis", specification.name());
-		assertEquals("1.9.1.travis.1208.9", specification.version().version());
-		assertEquals(1588032000000L, specification.date().toEpochMilli());
-		assertEquals(187L, specification.files().count());
 		specification.files().map(gem::file).forEach(b -> assertNotNull(b));
 	}
 
@@ -63,7 +53,7 @@ public class GemTests {
 		Path directory = TEST_DIRECTORY.resolve("testInstall");
 		Path file = directory.resolve("rhj_mini_gem/lib/rhj_mini_gem.rb");
 
-		gem.install(directory);
+		gem.install(directory, true);
 		assertTrue(IO.exists(file));
 	}
 }

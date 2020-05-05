@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import ch.rhj.io.IO;
-import ch.rhj.jruby.Config;
 import ch.rhj.util.Cfg;
 import ch.rhj.util.Singleton;
 
@@ -17,7 +16,7 @@ public class ClassPathGemProviderConfig {
 	public static final String PREFIX = "classpath";
 
 	private static final Singleton<ClassPathGemProviderConfig> instance = singleton( //
-			() -> Config.instance().child(PREFIX, ClassPathGemProviderConfig::new));
+			() -> GemProviderConfig.instance().child(PREFIX, ClassPathGemProviderConfig::new));
 
 	private final Cfg cfg;
 

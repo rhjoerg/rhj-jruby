@@ -34,6 +34,11 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 	
 		<dependency>
 			<groupId>com.google.jimfs</groupId>
@@ -43,7 +48,6 @@
 		<dependency>
 			<groupId>org.jruby</groupId>
 			<artifactId>jruby-core</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
